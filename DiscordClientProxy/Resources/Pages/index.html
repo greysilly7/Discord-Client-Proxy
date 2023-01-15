@@ -44,14 +44,14 @@
     }
 
     var xmlhttp = new XMLHttpRequest();
-    var url = "/api/ping";
+    var url = "/api/v9/policies/instance/domains";
     xmlhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
             var data = JSON.parse(this.responseText);
             window.GLOBAL_ENV.API_VERSION = data.instance.endpoints.defaultApiVersion;
             window.GLOBAL_ENV.API_ENDPOINT = data.instance.endpoints.apiEndpoint;
-            window.GLOBAL_ENV.GATEWAY_ENDPOINT = data.instance.endpoints.gatewayEndpoint;
-            let cdn_url = new URL(data.instance.endpoints.cdnEndpoint);
+            window.GLOBAL_ENV.GATEWAY_ENDPOINT = data.instance.endpoints.gateway;
+            let cdn_url = new URL(data.instance.endpoints.cdn);
             window.GLOBAL_ENV.CDN_HOST = cdn_url.host;
             //if (cdn_url.port) window.GLOBAL_ENV.CDN_HOST += ":" + cdn_url.port;
             console.log(window.GLOBAL_ENV);

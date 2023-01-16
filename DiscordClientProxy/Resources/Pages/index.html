@@ -48,10 +48,10 @@
     xmlhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
             var data = JSON.parse(this.responseText);
-            window.GLOBAL_ENV.API_VERSION = data.instance.endpoints.defaultApiVersion;
-            window.GLOBAL_ENV.API_ENDPOINT = data.instance.endpoints.apiEndpoint;
-            window.GLOBAL_ENV.GATEWAY_ENDPOINT = data.instance.endpoints.gateway;
-            let cdn_url = new URL(data.instance.endpoints.cdn);
+            window.GLOBAL_ENV.API_VERSION = data.defaultApiVersion;
+            window.GLOBAL_ENV.API_ENDPOINT = data.apiEndpoint;
+            window.GLOBAL_ENV.GATEWAY_ENDPOINT = data.gateway;
+            let cdn_url = new URL(data.cdn);
             window.GLOBAL_ENV.CDN_HOST = cdn_url.host;
             //if (cdn_url.port) window.GLOBAL_ENV.CDN_HOST += ":" + cdn_url.port;
             console.log(window.GLOBAL_ENV);

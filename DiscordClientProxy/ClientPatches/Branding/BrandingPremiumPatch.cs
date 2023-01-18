@@ -8,7 +8,7 @@ public class BrandingPremiumPatch : ClientPatch
     {
         if (!content.Contains("Nitro")) return content;
         Console.WriteLine($"[ClientPatch:{GetType().Name}] Applying patch...");
-        content = content.Replace("Discord Nitro", "${INSTANCE_NAME} Premium");
+        content = content.Replace("Discord Nitro", "Fosscord Premium");
         content = content.Replace("\"Nitro\"", "\"Premium\"");
         content = content.Replace("Nitro ", "Premium ");
         content = content.Replace(" Nitro", " Premium");

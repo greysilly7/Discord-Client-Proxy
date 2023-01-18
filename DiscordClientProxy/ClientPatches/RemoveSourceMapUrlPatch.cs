@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using DiscordClientProxy.Classes;
 
 namespace DiscordClientProxy.ClientPatches;
@@ -8,7 +9,9 @@ public class RemoveSourceMapUrlPatch : ClientPatch
     {
         if (!content.Contains("sourceMappingURL")) return content;
         Console.WriteLine($"[ClientPatch:{GetType().Name}] Removing source map url from client");
-        content = content.Replace("//# sourceMappingURL=", "//# disabledSourceMappingURL=");
+        content = Regex.Replace(content, @"\/\/# sourceMappingURL=.*\.map", "");
+        content = Regex.Replace(content, @"/\*# sourceMappingURL=.*\.map \*/", "");
+        //content = content.Replace("//# sourceMappingURL=", "//# disabledSourceMappingURL=");
         return content;
     }
 }

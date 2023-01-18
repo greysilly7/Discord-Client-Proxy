@@ -1,6 +1,6 @@
 namespace DiscordClientProxy;
 
-public class Environment
+public static class RuntimeEnvironment
 {
     public static string BaseDir =>
         (System.Environment.GetEnvironmentVariable("BASE_DIR") ?? System.Environment.CurrentDirectory)

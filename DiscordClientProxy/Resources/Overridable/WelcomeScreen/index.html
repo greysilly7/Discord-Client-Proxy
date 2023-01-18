@@ -1,0 +1,61 @@
+<div style="text-align: center;">
+    <img id="welcome-screen-fosscord-logo" src="https://raw.githubusercontent.com/fosscord/fosscord/master/assets-rebrand/svg/Fosscord-Wordmark-Orange.svg" alt="Fosscord logo">
+    <p id="welcome-screen-welcome-line">Welcome to Fosscord!</p>
+    <div style="font-size: 0.8em;"><i id="welcome-screen-description"></i></div>
+    <p id="welcome-screen-tos-line">You aren't supposed to see this, ever!!!! Script broke!!!!</p>
+    <p id="welcome-screen-contact">The instance owner has not configured contact details!</p>
+    <br>
+    <p>Fosscord is an implementation of the Discord backend.</p>
+    <p>For more information, visit <a href="https://fosscord.com">fosscord.com</a></p>
+</div>
+
+<style>
+    .welcome-screen-content {
+        padding: 20px;
+        color: #fff;
+    }
+
+    #welcome-screen-fosscord-logo {
+        height: 50px;
+    }
+
+    #welcome-screen-description {
+        transform: scale(0.5);
+        color: #ccc;
+    }
+</style>
+
+<script>
+    //get instance info
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "/api/ping", true);
+    xhr.onload = function (e) {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                let data = JSON.parse(xhr.responseText);
+                console.log(data);
+
+                //ignore the cursedness here
+                document.querySelector("#welcome-screen-welcome-line").innerHTML = `Welcome to ${data.instance.instanceName ?? document.location.host}, a Fosscord instance!`;
+
+                if (data.instance.description)
+                    document.querySelector("#welcome-screen-description").innerHTML = data.instance.description + "<br>";
+
+                if (data.instance.tosPage)
+                    document.querySelector("#welcome-screen-tos-link").href = data.instance.tosPage;
+                else
+                    document.querySelector("#welcome-screen-tos-line").innerHTML = "The instance owner has not set a Terms of Service page!";
+
+                if (data.instance.correspondenceEmail)
+                    document.querySelector("#welcome-screen-contact").innerHTML = `Contact: ${data.instance.correspondenceEmail}`;
+                else if (data.instance.correspondenceUserId)
+                    document.querySelector("#welcome-screen-contact").innerHTML = `Contact: <a href='/users/${data.instance.correspondenceUserId}'>${data.instance.correspondenceUserId}</a>`;
+                else
+                    document.querySelector("#welcome-screen-contact").innerHTML = "The instance owner has not set contact details!";
+            } else {
+                console.error(xhr.statusText);
+            }
+        }
+    };
+    xhr.send();
+</script>

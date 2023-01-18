@@ -18,7 +18,9 @@ public class ClientPatcher
         new GatewayImmediateReconnectPatch(), // Remove reconnect delay in gateway
         new KeepLocalStoragePatch(), // Prevent client from clearing localStorage 
         new NoQrLoginPatch(), // Remove QR login
-        new FastIdentifyPatch(),
+        new FastIdentifyPatch(), // Fast identity - speeds up client firstload
+        new EmotesFromGhCdnPatch(), // Map emotes to GitHub files (see twitter/twemoji, assets/svg/)
+
         //branding
         new BrandingLogoPatch(),
         new BrandingPremiumPatch(),
@@ -26,7 +28,12 @@ public class ClientPatcher
         new BrandingGuildReferencePatch(),
 
         //extras
-        new ChangelogPatch()
+        new ChangelogPatch(),
+
+        //fun stuff
+        new ForceIsStaffPatch(),
+        new ExperimentsOnStablePatch(),
+        new EnableCommonExperimentsPatch()
     };
 
     public static void EnsureConfigPopulated()
@@ -49,8 +56,9 @@ public class ClientPatcher
         await File.WriteAllTextAsync(path, content);
     }
 
-    public static async Task<string> Patch(string content)
+    public static async Task<string> Patch(string content, string filename = "unknown-file")
     {
+        var oldSize = content.Length;
         foreach (var patch in ClientPatches)
         {
             //make sure its definitely in there!
@@ -64,37 +72,31 @@ public class ClientPatcher
                 content = await patch.ApplyPatch(content);
         }
 
-        if (Configuration.Instance.Cache.DownloadAssetsRecursive)
+        Console.WriteLine($"[ClientPatcher] {filename}: {oldSize} -> {content.Length} ({(content.Length < oldSize ? "+" : "")}{oldSize - content.Length} bytes)");
+
+        /*if (Configuration.Instance.Cache.DownloadAssetsRecursive)
         {
-            var assets = await FindMoreAssets(content);
-            assets = assets.Where(x=>!File.Exists($"{Configuration.Instance.AssetCacheLocationResolved}/{x}")).ToList();
-            if (assets.Count > 0)
-            {
-                Console.WriteLine($"[ClientPatcher] Found {assets.Count} assets to fetch");
-                var throttler = new SemaphoreSlim(System.Environment.ProcessorCount * 8);
-                var tasks = assets.Select(async x =>
-                {
-                    await throttler.WaitAsync();
-                    await AssetCache.GetFromNetwork(x.Replace("/assets/", ""));
-                    throttler.Release();
-                }).ToList();
-                await Task.WhenAll(tasks);
-            }
+var assets = await FindMoreAssets(content);
+assets = assets.Where(x => !File.Exists($"{Configuration.Instance.AssetCacheLocationResolved}/{x}")).ToList();
+if (assets.Count > 0)
+{
+    Console.WriteLine($"[ClientPatcher] Found {assets.Count} assets to fetch");
+    var throttler = new SemaphoreSlim(256); //(System.Environment.ProcessorCount * 8);
+    var assettasks = assets.Where(x => !x.EndsWith("js") && !x.EndsWith("css"))
+        .Select(x => Task.Factory.StartNew(() => AssetCache.StreamToDiskAsync($"{Configuration.Instance.AssetCacheLocationResolved}/{x}", "https://discord.com/assets/" + x))).ToList();
+    var tasks = assets.Where(x => x.EndsWith("js") || x.EndsWith("css")).Select(x => Task.Factory.StartNew(async () =>
+    {
+        {
+            await throttler.WaitAsync();
+            await AssetCache.GetFromNetwork(x.Replace("/assets/", ""));
+            throttler.Release();
         }
+    })).ToList();
+    //await Task.WhenAll(tasks);
+    await Task.WhenAll(assettasks);
+}
+        }*/
 
         return content;
-    }
-
-    public static async Task<List<string>> FindMoreAssets(string content)
-    {
-        string pattern = @"\.exports=.\..\+\""(.*?\..{0,5})\""";
-        var matches = Regex.Matches(content, pattern);
-        var assets = new List<string>();
-        foreach (Match m in matches)
-        {
-            assets.Add(m.Groups[1].Value);
-        }
-
-        return assets;
     }
 }

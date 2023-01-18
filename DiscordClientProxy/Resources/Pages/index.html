@@ -13,134 +13,164 @@
 <body>
 <div id="app-mount"></div>
 <script>
-			window.__OVERLAY__ = /overlay/.test(location.pathname);
-			window.__BILLING_STANDALONE__ = /^\/billing/.test(location.pathname);
-			
-			var xmlhttp = new XMLHttpRequest();
-            var url = "/api/_fosscord/v1/global_env";
-            xmlhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    window.GLOBAL_ENV = JSON.parse(this.responseText);
-                };
+    window.__OVERLAY__ = /overlay/.test(location.pathname);
+    window.__BILLING_STANDALONE__ = /^\/billing/.test(location.pathname);
+    window.GLOBAL_ENV = {
+        WEBAPP_ENDPOINT: "",
+        ASSET_ENDPOINT: "",
+        MEDIA_PROXY_ENDPOINT: "http://dcp.localhost",
+        WIDGET_ENDPOINT: "/api/widget",
+        INVITE_HOST: "/api/invite",
+        GUILD_TEMPLATE_HOST: "discord.new",
+        GIFT_CODE_HOST: "discord.gift",
+        MARKETING_ENDPOINT: "//discord.com",
+        NETWORKING_ENDPOINT: "//router.discordapp.net",
+        RTC_LATENCY_ENDPOINT: "//latency.discord.media/rtc",
+        ACTIVITY_APPLICATION_HOST: "discordsays.com",
+        REMOTE_AUTH_ENDPOINT: "//localhost:3020",
+        MIGRATION_SOURCE_ORIGIN: "https://discordapp.com",
+        MIGRATION_DESTINATION_ORIGIN: "https://discord.com",
+        RELEASE_CHANNEL: "staging",
+        DISCORD_TEST: false,
+        PROJECT_ENV: "staging",
+        SENTRY_TAGS: {
+            "buildId": "75e36d9",
+            "buildType": "normal"
+        },
+        HTML_TIMESTAMP: 638074888762315600,
+        ALGOLIA_KEY: "aca0d7082e4e63af5ba5917d5e96bed0",
+        BRAINTREE_KEY: "production_5st77rrc_49pp2rp4phym7387",
+        STRIPE_KEY: "pk_live_CUQtlpQUF0vufWpnpUmQvcdi"
+    }
+
+    var xmlhttp = new XMLHttpRequest();
+    var url = "/api/v9/policies/instance/domains";
+    xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            var data = JSON.parse(this.responseText);
+            window.GLOBAL_ENV.API_VERSION = data.defaultApiVersion;
+            window.GLOBAL_ENV.API_ENDPOINT = data.apiEndpoint;
+            window.GLOBAL_ENV.GATEWAY_ENDPOINT = data.gateway;
+            let cdn_url = new URL(data.cdn);
+            window.GLOBAL_ENV.CDN_HOST = cdn_url.host;
+            //if (cdn_url.port) window.GLOBAL_ENV.CDN_HOST += ":" + cdn_url.port;
+            console.log(window.GLOBAL_ENV);
+        }
+    }
+
+    xmlhttp.open("GET", url, false);
+    xmlhttp.send();
+
+
+    const localStorage = window.localStorage;
+    // TODO: remote auth
+    // window.GLOBAL_ENV.REMOTE_AUTH_ENDPOINT = window.GLOBAL_ENV.GATEWAY_ENDPOINT.replace(/wss?:/, "");
+    localStorage.setItem("gatewayURL", window.GLOBAL_ENV.GATEWAY_ENDPOINT);
+    localStorage.setItem(
+        "DeveloperOptionsStore",
+        JSON.stringify({
+            trace: false,
+            canary: true,
+            logGatewayEvents: true,
+            logOverlayEvents: true,
+            logAnalyticsEvents: true,
+            sourceMapsEnabled: false,
+            axeEnabled: true,
+            bugReporterEnabled: true,
+            idleStatusIndicatorEnabled: false
+        })
+    );
+
+    setInterval(() => {
+        var token = JSON.parse(localStorage.getItem("token"));
+        if (token) {
+            var logincss = document.querySelector('#logincss'),
+                canRemove = logincss ? logincss : "";
+            if (canRemove !== "") {
+                document.querySelector("#logincss").remove();
+                canRemove = "";
             }
-           
-            xmlhttp.open("GET", url, false);
-            xmlhttp.send();
-            
-            
-			const localStorage = window.localStorage;
-			// TODO: remote auth
-			// window.GLOBAL_ENV.REMOTE_AUTH_ENDPOINT = window.GLOBAL_ENV.GATEWAY_ENDPOINT.replace(/wss?:/, "");
-			localStorage.setItem("gatewayURL", window.GLOBAL_ENV.GATEWAY_ENDPOINT);
-			localStorage.setItem(
-				"DeveloperOptionsStore",
-				JSON.stringify({
-					trace: false,
-					canary: true,
-					logGatewayEvents: true,
-					logOverlayEvents: true,
-					logAnalyticsEvents: true,
-					sourceMapsEnabled: false,
-					axeEnabled: true,
-					bugReporterEnabled: true,
-					idleStatusIndicatorEnabled: false
-				})
-			);
+        }
+    }, 1000)
 
-			setInterval(() => {
-				var token = JSON.parse(localStorage.getItem("token"));
-				if (token) {
-					var logincss = document.querySelector('#logincss'),
-					canRemove = logincss ? logincss: "";
-					if(canRemove !== "") {
-					document.querySelector("#logincss").remove();
-					canRemove = "";
-					}
-				}
-			}, 1000)
-
-			const settings = JSON.parse(localStorage.getItem("UserSettingsStore"));
-			if (settings && settings.locale.length <= 2) {
-				// fix client locale wrong and client not loading at all
-				settings.locale = "en-US";
-				localStorage.setItem("UserSettingsStore", JSON.stringify(settings));
-			}
-		
-
+    const settings = JSON.parse(localStorage.getItem("UserSettingsStore"));
+    if (settings && settings.locale.length <= 2) {
+        // fix client locale wrong and client not loading at all
+        settings.locale = "en-US";
+        localStorage.setItem("UserSettingsStore", JSON.stringify(settings));
+    }
 
 
 </script>
 <script>
-		(() => {
-			if (window.WebSocket == null) return;
-			if (window.__OVERLAY__) return;
+    (() => {
+        if (window.WebSocket == null) return;
+        if (window.__OVERLAY__) return;
 
-			const getStorage = (key) => {
-				try {
-					return JSON.parse(localStorage.getItem(key));
-				}
-				catch (e) {
-					return undefined;
-				}
-			};
+        const getStorage = (key) => {
+            try {
+                return JSON.parse(localStorage.getItem(key));
+            } catch (e) {
+                return undefined;
+            }
+        };
 
-			const token = getStorage("token");
-			if (!token) return;
+        const token = getStorage("token");
+        if (!token) return;
 
-			const encoding = window.DiscordNative != null || window.require != null ? "etf" : "json";
-			const url = window.GLOBAL_ENV.GATEWAY_ENDPOINT +
-				"/?encoding=" +
-				encoding +
-				"&v=" +
-				window.GLOBAL_ENV.API_VERSION +
-				"&compress=zlib-stream";
+        const encoding = window.DiscordNative != null || window.require != null ? "etf" : "json";
+        const url = window.GLOBAL_ENV.GATEWAY_ENDPOINT +
+            "/?encoding=" +
+            encoding +
+            "&v=" +
+            window.GLOBAL_ENV.API_VERSION +
+            "&compress=zlib-stream";
 
-			console.log("[FAST IDENTIFY] connecting to:", url);
+        console.log("[FAST IDENTIFY] connecting to:", url);
 
-			const socket = new WebSocket(url);
-			socket.binaryType = "arraybuffer";
-			const start = Date.now();
-			const state = { open: false, identity: false, gateway: url, messages: [] };
+        const socket = new WebSocket(url);
+        socket.binaryType = "arraybuffer";
+        const start = Date.now();
+        const state = {open: false, identity: false, gateway: url, messages: []};
 
-			socket.onopen = function () {
-				console.log(`[FAST IDENTIFY] connected in ${Date.now() - start}ms`);
-				state.open = true;
+        socket.onopen = function () {
+            console.log(`[FAST IDENTIFY] connected in ${Date.now() - start}ms`);
+            state.open = true;
 
-				console.log("[FAST IDENTIFY] Sending payload");
-				state.identity = true;
-				const payload = {
-					op: 2,
-					d: {
-						token: token,
-						capabilities: 509,
-						properties: {
-							...(getStorage("deviceProperties") || {}),
-							browser_user_agent: navigator.userAgent,
-						},
-						compress: false,
-						presence: {
-							status: getStorage("UserSettingsStore")?.status || "online",
-							since: 0,
-							activities: [],
-							afk: false,
-						},
-					}
-				};
-				socket.send(JSON.stringify(payload));
-			};
+            console.log("[FAST IDENTIFY] Sending payload");
+            state.identity = true;
+            const payload = {
+                op: 2,
+                d: {
+                    token: token,
+                    capabilities: 509,
+                    properties: {
+                        ...(getStorage("deviceProperties") || {}),
+                        browser_user_agent: navigator.userAgent,
+                    },
+                    compress: false,
+                    presence: {
+                        status: getStorage("UserSettingsStore")?.status || "online",
+                        since: 0,
+                        activities: [],
+                        afk: false,
+                    },
+                }
+            };
+            socket.send(JSON.stringify(payload));
+        };
 
-			socket.onclose = socket.onerror = (e) => {
-				console.log("[FAST IDENTIFY] Failed", e);
-				window._ws = null;
-			};
+        socket.onclose = socket.onerror = (e) => {
+            console.log("[FAST IDENTIFY] Failed", e);
+            window._ws = null;
+        };
 
-			socket.onmessage = (message) => {
-				state.messages.push(message);
-			};
+        socket.onmessage = (message) => {
+            state.messages.push(message);
+        };
 
-			window._ws = { ws: socket, state };
-		})();
-	
+        window._ws = {ws: socket, state};
+    })();
 
 
 </script>

@@ -29,7 +29,7 @@
       "applicationUrl": "http://localhost:5233",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "BASE_DIR": "~/.cache/DiscordClientProxy/"
+        "BASE_DIR": ".data/"
       }
     }
   }

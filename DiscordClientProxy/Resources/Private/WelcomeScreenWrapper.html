@@ -1,0 +1,145 @@
+<div id="welcome-screen-wrapper">
+    <div class="welcome-screen-background"></div>
+    <div class="welcome-screen">
+        <div class="welcome-screen-content">
+            <!-- content -->
+        </div>
+    </div>
+    <button id="welcome-screen-reload-button" onclick="reloadModal()">Reload modal contents</button>
+</div>
+<script>
+    function openWelcomeModal() {
+        document.getElementById("welcome-screen-wrapper").classList.add("open");
+        document.getElementById("welcome-screen-wrapper").classList.add("visible");
+        document.getElementById("welcome-screen-wrapper").classList.remove("close");
+        document.querySelector("#welcome-screen-wrapper .welcome-screen-background").onclick = closeWelcomeModal;
+    }
+
+    function closeWelcomeModal() {
+        document.getElementById("welcome-screen-wrapper").classList.remove("open");
+        document.getElementById("welcome-screen-wrapper").classList.add("close");
+        setTimeout(function() {
+            document.getElementById("welcome-screen-wrapper").classList.remove("visible");
+        }, 500);
+        
+    }
+    
+    function reloadModal() {
+        console.log("reloadModal");
+        //web request
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/resources/welcome-screen", true);
+        xhr.onload = function (e) {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    document.querySelector("#welcome-screen-wrapper .welcome-screen-content").innerHTML = xhr.responseText;
+                    document.querySelectorAll(".welcome-screen script").forEach(x=>eval(x.innerHTML))
+                } else {
+                    console.error(xhr.statusText);
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    //make welcome-screen-wrapper and welcome-screen visible
+    //setTimeout(openWelcomeModal, 500);
+</script>
+<style>
+    #welcome-screen-reload-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    #welcome-screen-wrapper.visible {
+        display: block;
+    }
+
+    #welcome-screen-wrapper {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+    }
+
+    .welcome-screen-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        opacity: 0.5;
+        z-index: 95;
+    }
+
+    #welcome-screen-wrapper .welcome-screen {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: 400px;
+        background-color: #36393f;
+        border-radius: 5px;
+        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        z-index: 100;
+    }
+
+    #welcome-screen-wrapper.open > .welcome-screen  {
+        animation: welcome-screen-open 0.5s ease-in-out;
+    }
+    #welcome-screen-wrapper.open > .welcome-screen-background  {
+         animation: welcome-screen-bg-open 0.5s ease-in-out;
+     }
+
+    #welcome-screen-wrapper.close > .welcome-screen {
+        animation: welcome-screen-close 0.5s ease-in-out;
+    }
+    #welcome-screen-wrapper.close > .welcome-screen-background {
+        animation: welcome-screen-bg-close 0.5s ease-in-out;
+    }
+
+    @keyframes welcome-screen-open {
+        0% {
+            transform: translate(-50%, -50%) scale(0.5);
+            opacity: 0;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+    }
+    @keyframes welcome-screen-bg-open {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 0.5;
+        }
+    }
+
+    @keyframes welcome-screen-close {
+        0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(0.5);
+            opacity: 0;
+        }
+    }
+    @keyframes welcome-screen-bg-close {
+         0% {
+             opacity: 0.5;
+         }
+         100% {
+             opacity: 0;
+         }
+     }
+</style>

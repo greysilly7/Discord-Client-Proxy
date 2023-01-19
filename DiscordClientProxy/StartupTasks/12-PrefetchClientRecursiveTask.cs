@@ -8,7 +8,7 @@ namespace DiscordClientProxy.StartupTasks;
 
 public class PrefetchClientRecursiveTask : IStartupTask
 {
-    public int Order { get; } = 11;
+    public int Order { get; } = 12;
 
     public async Task ExecuteAsync()
     {

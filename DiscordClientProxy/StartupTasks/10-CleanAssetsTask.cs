@@ -9,16 +9,15 @@ public class CleanAssetsTask : IStartupTask
 
     public async Task ExecuteAsync()
     {
-        return;
         if (Configuration.Instance.Cache.StartupCacheOptions.WipeAllOnStart && Directory.Exists(Configuration.Instance.AssetCacheLocationResolved))
         {
-            Console.WriteLine("Wiping cache...");
+            Console.WriteLine("Wiping all cached data...");
             Directory.Delete(Configuration.Instance.AssetCacheLocationResolved, true);
             Directory.CreateDirectory(Configuration.Instance.AssetCacheLocationResolved);
         }
         else if (Configuration.Instance.Cache.StartupCacheOptions.WipeCodeOnStart && Directory.Exists(Configuration.Instance.AssetCacheLocationResolved))
         {
-            Console.WriteLine("Wiping cache...");
+            Console.WriteLine("Wiping all cached code assets...");
             WipeAssetsRecursive(Configuration.Instance.AssetCacheLocationResolved);
         }
 

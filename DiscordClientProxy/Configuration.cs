@@ -23,7 +23,7 @@ public class Configuration
     {
         Instance = (File.Exists("config.json")
             ? JsonSerializer.Deserialize<Configuration>(File.ReadAllText("config.json"))
-            : new Configuration()) ?? new Configuration();
+            : new()) ?? new Configuration();
         Instance.Save();
     }
 
@@ -40,6 +40,7 @@ public class Configuration
 public class DebugOptions
 {
     public string? ClientEnvProxyUrl { get; set; } = null;
+    public string? SpawnProcessOnReady { get; set; } = null; // eg. `code-insiders $DIR`
 }
 
 public class CacheOptions

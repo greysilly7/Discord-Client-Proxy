@@ -14,9 +14,10 @@ public class StartupTasks
             .OrderBy(t=>t.Order);
         
         Console.WriteLine($"Found {startupTasks.Count()} startup tasks. Running...");
+        var maxLength = startupTasks.Max(x => x.GetType().Name.Length);
         foreach (var startupTask in startupTasks)
         {
-            Console.WriteLine($"[StartupTask/{startupTask.Order}] {startupTask.GetType().Name} started");
+            Console.WriteLine(startupTask.GetPrefix(maxLength)+" Running...");
             await startupTask.ExecuteAsync();
         }
         Console.WriteLine("Startup tasks finished!");

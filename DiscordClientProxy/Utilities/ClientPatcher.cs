@@ -1,40 +1,18 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 using DiscordClientProxy.Classes;
 using DiscordClientProxy.ClientPatches;
 using DiscordClientProxy.ClientPatches.Branding;
 using DiscordClientProxy.ClientPatches.CustomisationPatches;
+using DiscordClientProxy.Interfaces;
 
 namespace DiscordClientProxy.Utilities;
 
 public class ClientPatcher
 {
-    public static ClientPatch[] ClientPatches =
-    {
-        new RemoveSourceMapUrlPatch(), // Remove source map urls, saves some requests
-        new AlternateSentryPatch(), // Move sentry to ours, as to not flood Discord.com's sentry
-        new GlobalEnvWarningPatch(), // Clarify global env warning to hint misconfiguration
-        new PlainTextGatewayPatch(), // Use plaintext gateway, useful in debugging
-        new NoXssWarningPatch(), // Disable the self-xss warnings (anti-copy-paste)
-        new GatewayImmediateReconnectPatch(), // Remove reconnect delay in gateway
-        new KeepLocalStoragePatch(), // Prevent client from clearing localStorage 
-        new NoQrLoginPatch(), // Remove QR login
-        new FastIdentifyPatch(), // Fast identity - speeds up client firstload
-        new EmotesFromGhCdnPatch(), // Map emotes to GitHub files (see twitter/twemoji, assets/svg/)
-
-        //branding
-        new BrandingLogoPatch(),
-        new BrandingPremiumPatch(),
-        new BrandingNamePatch(),
-        new BrandingGuildReferencePatch(),
-
-        //extras
-        new ChangelogPatch(),
-
-        //fun stuff
-        new ForceIsStaffPatch(),
-        new ExperimentsOnStablePatch(),
-        new EnableCommonExperimentsPatch()
-    };
+    public static ClientPatch[] ClientPatches = Assembly.GetExecutingAssembly().GetTypes()
+        .Where(t => typeof(ClientPatch).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+        .Select(t => (ClientPatch) Activator.CreateInstance(t)).ToArray();
 
     public static void EnsureConfigPopulated()
     {

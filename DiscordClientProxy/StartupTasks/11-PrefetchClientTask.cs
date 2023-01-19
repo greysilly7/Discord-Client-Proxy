@@ -9,7 +9,7 @@ namespace DiscordClientProxy.StartupTasks;
 
 public class PrefetchClientTask : IStartupTask
 {
-    public int Order { get; } = 10;
+    public int Order { get; } = 11;
 
     public async Task ExecuteAsync()
     {

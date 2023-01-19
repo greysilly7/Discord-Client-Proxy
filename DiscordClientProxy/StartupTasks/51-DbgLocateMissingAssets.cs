@@ -11,7 +11,7 @@ namespace DiscordClientProxy.StartupTasks;
 
 public class DbgLocateMissingAssets : IStartupTask
 {
-    public int Order { get; } = 1000;
+    public int Order { get; } = 51;
 
     public async Task ExecuteAsync()
     {
